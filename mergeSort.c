@@ -1,73 +1,85 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void merge(int arr[], int left, int mid, int right) {
-    int n1 = mid - left + 1;
-    int n2 = right - mid;
+struct ListNode {
+    int val;
+    struct ListNode *next;
+};
 
-    int *L = (int *)malloc(n1 * sizeof(int));
-    int *R = (int *)malloc(n2 * sizeof(int));
+struct ListNode* merge(struct ListNode* l1, struct ListNode* l2) {
+    if (!l1) return l2;
+    if (!l2) return l1;
 
-    for (int i = 0; i < n1; i++)
-        L[i] = arr[left + i];
-    for (int j = 0; j < n2; j++)
-        R[j] = arr[mid + 1 + j];
-
-    int i = 0, j = 0, k = left;
-    while (i < n1 && j < n2) {
-        if (L[i] <= R[j]) {
-            arr[k] = L[i];
-            i++;
-        } else {
-            arr[k] = R[j];
-            j++;
-        }
-        k++;
-    }
-
-    while (i < n1) {
-        arr[k] = L[i];
-        i++;
-        k++;
-    }
-
-    while (j < n2) {
-        arr[k] = R[j];
-        j++;
-        k++;
-    }
-
-    free(L);
-    free(R);
-}
-
-void mergeSort(int arr[], int left, int right) {
-    if (left < right) {
-        int mid = left + (right - left) / 2;
-
-        mergeSort(arr, left, mid);
-        mergeSort(arr, mid + 1, right);
-
-        merge(arr, left, mid, right);
+    if (l1->val < l2->val) {
+        l1->next = merge(l1->next, l2);
+        return l1;
+    } else {
+        l2->next = merge(l1, l2->next);
+        return l2;
     }
 }
 
-void printArray(int arr[], int size) {
-    for (int i = 0; i < size; i++)
-        printf("%d ", arr[i]);
-    printf("\n");
+struct ListNode* getMiddle(struct ListNode* head) {
+    if (!head) return head;
+
+    struct ListNode* slow = head;
+    struct ListNode* fast = head->next;
+
+    while (fast && fast->next) {
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+
+    return slow;
+}
+
+struct ListNode* mergeSort(struct ListNode* head) {
+    if (!head || !head->next) return head;
+
+    struct ListNode* middle = getMiddle(head);
+    struct ListNode* nextToMiddle = middle->next;
+
+    middle->next = NULL;
+
+    struct ListNode* left = mergeSort(head);
+    struct ListNode* right = mergeSort(nextToMiddle);
+
+    return merge(left, right);
+}
+
+void printList(struct ListNode* head) {
+    while (head) {
+        printf("%d -> ", head->val);
+        head = head->next;
+    }
+    printf("NULL\n");
+}
+
+void push(struct ListNode** head_ref, int new_data) {
+    struct ListNode* new_node = (struct ListNode*)malloc(sizeof(struct ListNode));
+    new_node->val = new_data;
+    new_node->next = (*head_ref);
+    (*head_ref) = new_node;
 }
 
 int main() {
-    int arr[] = {12, 11, 13, 5, 6, 7};
-    int arr_size = sizeof(arr) / sizeof(arr[0]);
+    struct ListNode* head = NULL;
 
-    printf("Given array is \n");
-    printArray(arr, arr_size);
 
-    mergeSort(arr, 0, arr_size - 1);
+    push(&head, 15);
+    push(&head, 10);
+    push(&head, 5);
+    push(&head, 20);
+    push(&head, 3);
+    push(&head, 2);
 
-    printf("\nSorted array is \n");
-    printArray(arr, arr_size);
+    printf("Linked List before sorting:\n");
+    printList(head);
+
+    head = mergeSort(head);
+
+    printf("Linked List after sorting:\n");
+    printList(head);
+
     return 0;
 }

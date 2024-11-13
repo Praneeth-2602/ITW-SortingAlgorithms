@@ -70,5 +70,7 @@ int main() {
     printf("Linked list after sorting:\n");
     printList(head);
 
+    printf("version 4");
+
     return 0;
 }
